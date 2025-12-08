@@ -1,11 +1,32 @@
 function setup() {
-  createCanvas(400, 400); 
-  background(255); 
+  createCanvas(600, 600); 
+}
+function draw() {
+  background(127); 
+//grey background
+
+let tankWidth = 600;
+  let tankHeight = 400;
+  let tankX = (width - tankWidth) / 2;
+  let tankY = (height - tankHeight) / 2;
+
+  fill(135, 206, 250, 200); // blue color for water
+  noStroke();
+  rect(tankX, tankY, tankWidth, tankHeight); 
+
+  // outline for tank
+  noFill(); 
+  stroke(50);
+  strokeWeight(5); 
+  rect(tankX, tankY, tankWidth, tankHeight); // tank frame
+
+  // top of tank
+  strokeWeight(1);
+  fill(100);
+  rect(tankX, tankY - 10, tankWidth, 10); 
+  rect(tankX, tankY + tankHeight, tankWidth, 10); 
+}
 }
 
-function draw() {
-  let bowlColor = color(100, 150, 200, 150); 
-  fill(bowlColor); 
-  noStroke(); 
-  ellipse(width / 2, height / 2, 200, 150); // Draws an ellipse at the center of the canvas with a width of 200 and a height of 150.
-}
+  
+  
