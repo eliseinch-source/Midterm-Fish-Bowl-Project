@@ -1,0 +1,124 @@
+let myFish;
+let tankX, tankY, tankWidth, tankHeight;
+
+function setup() {
+  createCanvas(600, 600);
+  angleMode(DEGREES);
+
+  tankWidth = 600;
+  tankHeight = 400;
+  tankX = (width - tankWidth) / 2;
+  tankY = (height - tankHeight) / 2;
+  
+  myFish = new Fish(width / 2, height / 2); 
+}
+function draw() {
+  background(127); 
+  fill(135, 206, 250, 200); 
+  noStroke();
+  rect(tankX, tankY, tankWidth, tankHeight); 
+
+  noFill(); 
+  stroke(50);
+  strokeWeight(5); 
+  rect(tankX, tankY, tankWidth, tankHeight); 
+
+  strokeWeight(1);
+  fill(100);
+  rect(tankX, tankY - 10, tankWidth, 10); 
+  rect(tankX, tankY + tankHeight, tankWidth, 10);
+
+  myFish.update();
+  myFish.display();
+}
+class Fish {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = 1;
+    this.smoothness = 0.05; 
+    this.buffer = 40; 
+    
+  
+    this.vy = 0;   
+    this.gravity = 0.5;
+    this.isInAir = false;
+    this.jumpForce = -10;
+  }
+
+  update() {
+    if (mouseX > this.x) {
+      this.size = 1; 
+    } else {
+      this.size = -1; 
+    }
+
+    if (!this.isInAir && mouseY < tankY && this.y <= tankY + this.buffer + 5) {
+      this.vy = this.jumpForce;
+      this.isInAir = true;
+    }
+    if (this.isInAir) {
+      this.vy += this.gravity; 
+      this.y += this.vy;      
+      
+    
+      this.x = lerp(this.x, mouseX, this.smoothness * 0.5); 
+    } else {
+      
+      this.x = lerp(this.x, mouseX, this.smoothness);
+      this.y = lerp(this.y, mouseY, this.smoothness);
+    }
+    
+    
+    this.x = constrain(this.x, tankX + this.buffer, tankX + tankWidth - this.buffer);
+
+    
+    if (this.y >= tankY + tankHeight - this.buffer) {
+      this.y = tankY + tankHeight - this.buffer; 
+      this.vy = 0; 
+      this.isInAir = false;
+    } 
+    
+  
+    this.y = constrain(this.y, -100, height + 100); 
+  }
+display() {
+    push(); 
+    translate(this.x, this.y); 
+    scale(this.size, 1); 
+
+  
+    let wiggleSpeed = this.isInAir ? 1 : 5;
+    let finSpeed = this.isInAir ? 5 : 10;
+
+    let tailAngle = sin(frameCount * wiggleSpeed) * 20; 
+    let finAngle = sin(frameCount * finSpeed) * 45; 
+
+    // body
+    fill(255, 128, 0); 
+    noStroke();
+    ellipse(0, 0, 80, 40); 
+    
+    //eye for more realistic look
+    fill(255);
+    ellipse(25, -5, 10, 10);
+    fill(0);
+    ellipse(28, -5, 4, 4);
+
+    //tail
+    push(); 
+    translate(-40, 0); 
+    rotate(tailAngle); 
+    triangle(0, -20, 0, 20, -30, 0); 
+    pop(); 
+
+    //fin
+    push(); 
+    translate(0, 15); 
+    rotate(finAngle); 
+    triangle(0, 0, 20, -15, 20, 0); 
+    pop(); 
+
+    pop(); 
+  }
+}
