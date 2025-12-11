@@ -1,0 +1,53 @@
+ this.size = 1;
+    this.smoothness = 0.05; 
+  }
+
+  update() {
+    if (mouseX > this.x) {
+      this.size = 1; 
+    } else {
+      this.size = -1;
+    }
+  
+    this.x = lerp(this.x, mouseX, this.smoothness);
+    this.y = lerp(this.y, mouseY, this.smoothness);
+    this.x = constrain(this.x, 0, width);
+    this.y = constrain(this.y, 0, height);
+  }
+
+  display() {
+    push(); 
+    translate(this.x, this.y); 
+    scale(this.size, 1); 
+
+    let tailAngle = sin(frameCount * 5) * 20; 
+    let finAngle = sin(frameCount * 10) * 45; 
+
+    // body
+    fill(255, 128, 0); 
+    noStroke();
+    ellipse(0, 0, 80, 40); 
+    
+    //eye for more realistic look
+    fill(255);
+    ellipse(25, -5, 10, 10);
+    fill(0);
+    ellipse(28, -5, 4, 4);
+
+    //tail
+    push(); 
+    translate(-40, 0); 
+    rotate(tailAngle); 
+    triangle(0, -20, 0, 20, -30, 0); 
+    pop(); 
+
+    //fin
+    push(); 
+    translate(0, 15); 
+    rotate(finAngle); 
+    triangle(0, 0, 20, -15, 20, 0); 
+    pop(); 
+
+    pop(); 
+  }
+}
