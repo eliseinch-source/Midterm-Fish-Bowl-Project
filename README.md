@@ -1,1 +1,1 @@
-This is my midterm project. I wanted to create a fish tank with a fish that will follow the mouse and have bubble escape from its mouth that move up to the sop of the tank and pop once it touches air
+This is my midterm project. I wanted to create a fish tank with a fish that will follow the mouse, have bubble escape from its mouth that move up to the top of the tank and pop once it touches air, and have the fish be able to jump out of the water. I will try to have the fish slow down its movements once it lands in the water, simulating how water works in real life.
