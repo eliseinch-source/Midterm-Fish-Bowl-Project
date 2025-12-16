@@ -1,0 +1,196 @@
+let myFish;
+let tankX, tankY, tankWidth, tankHeight;
+let bubbles = []; 
+let lastBubbleTime = 0;
+const bubbleInterval = 30000; 
+
+function setup() {
+  createCanvas(600, 600);
+  angleMode(DEGREES);
+
+  tankWidth = 600;
+  tankHeight = 400;
+  tankX = (width - tankWidth) / 2;
+  tankY = (height - tankHeight) / 2;
+  
+  myFish = new Fish(width / 2, height / 2); 
+  lastBubbleTime = millis(); 
+}
+
+function draw() {
+  background(127); 
+  fill(135, 206, 250, 200); 
+  noStroke();
+  rect(tankX, tankY, tankWidth, tankHeight); 
+
+  noFill(); 
+  stroke(50);
+  strokeWeight(5); 
+  rect(tankX, tankY, tankWidth, tankHeight); 
+
+  strokeWeight(1);
+  fill(100);
+  rect(tankX, tankY - 10, tankWidth, 10); 
+  rect(tankX, tankY + tankHeight, tankWidth, 10);
+  if (millis() - lastBubbleTime > bubbleInterval) {
+    let startX = random(tankX + 20, tankX + tankWidth - 20);
+     bubbles.push(new Bubble(startX, tankY + tankHeight, millis()));
+    lastBubbleTime = millis(); 
+  }
+
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    bubbles[i].update();
+    bubbles[i].display();
+
+    if (bubbles[i].popped) {
+      if (myFish.targetBubbleId === bubbles[i].id) {
+          myFish.targetBubbleId = null;
+      }
+      bubbles.splice(i, 1);
+    }
+  }
+
+  myFish.update();
+  myFish.display();
+}
+class Bubble {
+    constructor(x, y, id) {
+        this.x = x;
+        this.y = y;
+        this.id = id; 
+        this.size = random(10, 25);
+        this.speed = random(1, 3);
+        this.popped = false;
+    }
+    update() {
+        this.y -= this.speed; 
+        this.x += random(-0.5, 0.5); 
+        if (this.y < tankY) {
+            this.popped = true; 
+        }
+    }
+
+    display() {
+        if (!this.popped) {
+            noStroke();
+            fill(255, 255, 255, 150);
+            ellipse(this.x, this.y, this.size);
+        }
+    }
+}
+class Fish {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = 1;
+    this.smoothness = 0.05; 
+    this.buffer = 40; 
+    this.vy = 0;   
+    this.gravity = 0.5;
+    this.isInAir = false;
+    this.jumpForce = -10;
+    this.waterDrag = 0.92; 
+    this.targetBubbleId = null;
+    this.targetX = mouseX; 
+    this.targetY = mouseY;
+  }
+
+  update() {
+    let nearestBubble = null;
+    let minDist = Infinity;
+
+    for (let bubble of bubbles) {
+        let d = dist(this.x, this.y, bubble.x, bubble.y);
+        if (d < minDist) {
+            minDist = d;
+            nearestBubble = bubble;
+        }
+    }
+    if (nearestBubble && this.targetBubbleId === null) {
+        this.targetBubbleId = nearestBubble.id;
+    }
+    this.targetX = mouseX;
+    this.targetY = mouseY;
+    if (this.targetBubbleId !== null) {
+        let currentTargetBubble = bubbles.find(b => b.id === this.targetBubbleId);
+        if (currentTargetBubble) {
+            this.targetX = currentTargetBubble.x;
+            this.targetY = currentTargetBubble.y;
+        }
+    }
+    if (this.targetX > this.x) {
+      this.size = 1; 
+    } else {
+      this.size = -1; 
+    }
+    if (!this.isInAir && mouseY < tankY && this.y <= tankY + this.buffer + 5) {
+      this.vy = this.jumpForce;
+      this.isInAir = true;
+    }
+    if (this.isInAir) {
+      this.vy += this.gravity; 
+      this.y += this.vy;      
+      this.x = lerp(this.x, this.targetX, this.smoothness * 0.5); 
+    } else {
+      this.y += this.vy; 
+      this.vy *= this.waterDrag; 
+      this.x = lerp(this.x, this.targetX, this.smoothness);
+      this.y = lerp(this.y, this.targetY, this.smoothness);
+    }
+    this.x = constrain(this.x, tankX + this.buffer, tankX + tankWidth - this.buffer);
+    if (this.y < tankY) {
+        this.isInAir = true; 
+    }
+    const bottomBound = tankY + tankHeight - this.buffer;
+    
+    if (this.y >= bottomBound) {
+      this.y = bottomBound; 
+      if (this.vy > 3) { 
+          this.vy *= -0.4; 
+          this.isInAir = false; 
+      } else {
+          this.vy = 0; 
+          this.isInAir = false;
+      }
+    } 
+    this.y = constrain(this.y, -100, height + 100); 
+  }
+  
+  display() {
+    push(); 
+    translate(this.x, this.y); 
+    scale(this.size, 1); 
+
+    let wiggleSpeed = this.isInAir ? 1 : 5;
+    let finSpeed = this.isInAir ? 5 : 10;
+    let tailAngle = sin(frameCount * wiggleSpeed) * 20; 
+    let finAngle = sin(frameCount * finSpeed) * 45; 
+
+    // body
+    fill(255, 128, 0); 
+    noStroke();
+    ellipse(0, 0, 80, 40); 
+    
+    //eye
+    fill(255);
+    ellipse(25, -5, 10, 10);
+    fill(0);
+    ellipse(28, -5, 4, 4);
+
+    //tail
+    push(); 
+    translate(-40, 0); 
+    rotate(tailAngle); 
+    triangle(0, -20, 0, 20, -30, 0); 
+    pop(); 
+
+    //fin
+    push(); 
+    translate(0, 15); 
+    rotate(finAngle); 
+    triangle(0, 0, 20, -15, 20, 0); 
+    pop(); 
+
+    pop(); 
+  }
+}
